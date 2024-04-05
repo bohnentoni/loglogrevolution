@@ -1,0 +1,7 @@
+name: FastHarvest
+version: '@mod_version@'
+main: lol.hub.fastharvest.Plugin
+api-version: '1.20'
+author: nothub
+description: Tidy up them containers
+website: https://github.com/nothub/FastHarvest
