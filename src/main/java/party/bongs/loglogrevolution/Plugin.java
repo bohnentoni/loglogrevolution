@@ -32,7 +32,7 @@ public final class Plugin extends JavaPlugin implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerBlockBreakEvent(BlockBreakEvent ev) {
 
-        if (!isAxe(ev.getPlayer().getActiveItem())) return;
+        if (!isAxe(ev.getPlayer().getInventory().getItemInMainHand())) return;
 
         Set<Block> breakyLot = ConcurrentHashMap.newKeySet();
 
