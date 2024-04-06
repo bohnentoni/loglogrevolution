@@ -1,7 +1,7 @@
-name: FastHarvest
+name: LogLogRevolution
 version: '@mod_version@'
-main: lol.hub.fastharvest.Plugin
+main: party.bongs.loglogrevolution.Plugin
 api-version: '1.20'
-author: nothub
-description: Tidy up them containers
-website: https://github.com/nothub/FastHarvest
+author: bohnentoni
+description: Wroom Wroom Tree Chop like Ferrarogini
+website: https://github.com/bohnentoni/loglogrevolution

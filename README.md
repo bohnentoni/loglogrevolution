@@ -1,9 +1,9 @@
-# FastHarvest
+# LogLogRevolution
 
-Get that produce
+Get that wood
 
 ---
 
-Harvest crops without replanting.
+Harvest woods without regrets.
 
-Use a **hoe** for slightly more drops.
+Use an **axe**.
