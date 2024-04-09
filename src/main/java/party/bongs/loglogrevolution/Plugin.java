@@ -3,11 +3,11 @@ package party.bongs.loglogrevolution;
 import com.google.common.collect.ImmutableMap;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,15 +22,15 @@ public final class Plugin extends JavaPlugin implements Listener {
 
     private static final int limit = 420;
 
-    private static final Set<Vector> neighbors = Set.of(
-            new Vector( 0, 0, -1), // north
-            new Vector( 1, 0,  0), // east
-            new Vector( 0, 0,  1), // south
-            new Vector(-1, 0,  0), // west
-            new Vector( 1, 0, -1), // north-east
-            new Vector(-1, 0, -1), // north-west
-            new Vector( 1, 0,  1), // south-east
-            new Vector(-1, 0,  1)  // south-west
+    private static final Set<BlockFace> neighborsY = Set.of(
+            BlockFace.NORTH,
+            BlockFace.EAST,
+            BlockFace.SOUTH,
+            BlockFace.WEST,
+            BlockFace.NORTH_EAST,
+            BlockFace.NORTH_WEST,
+            BlockFace.SOUTH_EAST,
+            BlockFace.SOUTH_WEST
     );
 
     private static final Set<Material> logs = Set.of(
@@ -94,7 +94,7 @@ public final class Plugin extends JavaPlugin implements Listener {
         Set<Block> breakies = new HashSet<>();
 
         // trunk
-        breakies.addAll(bfs(ev.getBlock(), mat1 -> mat1.equals(ev.getBlock().getType())));
+        breakies.addAll(bfs(ev.getBlock(), mat -> mat.equals(ev.getBlock().getType())));
 
         // leaves
         breakies.addAll(bfs(ev.getBlock(), mat -> associated
@@ -108,9 +108,9 @@ public final class Plugin extends JavaPlugin implements Listener {
     }
 
     private Set<Block> neighbors(Block center, Predicate<Material> filter) {
-        return neighbors.stream()
+        return neighborsY.stream()
                 // grab all neighbors of the center block
-                .map(v -> center.getRelative(v.getBlockX(), v.getBlockY(), v.getBlockZ()))
+                .map(center::getRelative)
                 // keep them if they match the material filter
                 .filter(block -> filter.test(block.getType()))
                 .collect(Collectors.toUnmodifiableSet());
