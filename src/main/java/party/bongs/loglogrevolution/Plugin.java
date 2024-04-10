@@ -22,7 +22,7 @@ import static org.bukkit.block.BlockFace.*;
 
 public final class Plugin extends JavaPlugin implements Listener {
 
-    private static final int limit = 420;
+    private static final int leaveLimit = 420;
 
     private static final Set<BlockFace> neighborFaces = Set.of(
             NORTH,
@@ -93,7 +93,8 @@ public final class Plugin extends JavaPlugin implements Listener {
     private static void searchConnected(
             Block start,
             List<Block> found,
-            Predicate<Material> filter
+            Predicate<Material> filter,
+            int limit
     ) {
         for (Block block : neighbors(start, filter)) {
 
@@ -108,7 +109,7 @@ public final class Plugin extends JavaPlugin implements Listener {
 
             // check neighbors
             found.add(block);
-            searchConnected(block, found, filter);
+            searchConnected(block, found, filter, limit);
         }
     }
 
@@ -120,6 +121,11 @@ public final class Plugin extends JavaPlugin implements Listener {
                 tool.setItemMeta(damageable);
             }
         }
+    }
+
+    private static int getDura(ItemStack tool) {
+        var damage = ((Damageable) tool.getItemMeta()).getDamage();
+        return tool.getType().getMaxDurability() - damage;
     }
 
     @Override
@@ -141,30 +147,27 @@ public final class Plugin extends JavaPlugin implements Listener {
 
         // trunk
         List<Block> trunk = new ArrayList<>();
-        searchConnected(ev.getBlock(), trunk, mat -> mat.equals(logMat));
+        searchConnected(ev.getBlock(), trunk, mat -> mat.equals(logMat), getDura(tool));
 
         // leaves
         List<Block> breakies = new ArrayList<>(trunk);
         for (Block block : trunk) {
             searchConnected(block, breakies, mat -> connected
                     .getOrDefault(logMat, Collections.emptySet())
-                    .contains(mat));
+                    .contains(mat), leaveLimit);
         }
 
         for (Block block : breakies) {
 
+            // damage tool for each log
             if (logs.contains(block.getType())) {
-                var maxDura = tool.getType().getMaxDurability();
-                var damage = ((Damageable) tool.getItemMeta()).getDamage();
-                if (maxDura - damage <= 1) {
+                if (getDura(tool) <= 1) {
                     return;
                 }
                 damageTool(tool);
             }
 
             block.breakNaturally();
-
-            // TODO: drop all loot in front of player
         }
     }
 }
