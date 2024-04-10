@@ -3,7 +3,6 @@ package party.bongs.loglogrevolution;
 import com.google.common.collect.ImmutableMap;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,6 +10,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -18,23 +18,41 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.bukkit.Material.*;
-import static org.bukkit.block.BlockFace.*;
 
 public final class Plugin extends JavaPlugin implements Listener {
 
     private static final int leaveLimit = 420;
 
-    private static final Set<BlockFace> neighborFaces = Set.of(
-            NORTH,
-            EAST,
-            SOUTH,
-            WEST,
-            NORTH_EAST,
-            NORTH_WEST,
-            SOUTH_EAST,
-            SOUTH_WEST,
-            UP,
-            DOWN
+    private static final List<Vector> neighborFaces = List.of(
+            // middle
+            new Vector( 0, 0, -1),  // N
+            new Vector( 1, 0, 0),   // E
+            new Vector( 0, 0, 1),   // S
+            new Vector(-1, 0, 0),  // W
+            new Vector( 1, 0, -1),  // NE
+            new Vector(-1, 0, -1), // NW
+            new Vector( 1, 0, 1),   // SE
+            new Vector(-1, 0, 1),  // SW
+            // top
+            new Vector(0, 1, 0),  // center
+            new Vector( 0, 1, -1),  // N
+            new Vector( 1, 1, 0),   // E
+            new Vector( 0, 1, 1),   // S
+            new Vector(-1, 1, 0),  // W
+            new Vector( 1, 1, -1),  // NE
+            new Vector(-1, 1, -1), // NW
+            new Vector( 1, 1, 1),   // SE
+            new Vector(-1, 1, 1),  // SW
+            // bottom
+            new Vector(0, -1, 0),  // center
+            new Vector( 0,-1, -1),  // N
+            new Vector( 1,-1, 0),   // E
+            new Vector( 0,-1, 1),   // S
+            new Vector(-1,-1, 0),  // W
+            new Vector( 1,-1, -1),  // NE
+            new Vector(-1,-1, -1), // NW
+            new Vector( 1,-1, 1),   // SE
+            new Vector(-1,-1, 1)   // SW
     );
 
     private static final Set<Material> logs = Set.of(
@@ -83,15 +101,16 @@ public final class Plugin extends JavaPlugin implements Listener {
             .build();
 
     private static Set<Block> neighbors(Block center, Predicate<Material> filter) {
-        return neighborFaces.stream()
-
-                // grab all neighbors of the center block
-                .map(center::getRelative)
-
-                // keep them if they match the material filter
-                .filter(block -> filter
-                        .test(block.getType()))
-                .collect(Collectors.toUnmodifiableSet());
+        // grab all neighbors of the center block
+        // keep them if they match the material filter
+        Set<Block> set = new HashSet<>();
+        for (Vector vec : neighborFaces) {
+            Block block = center.getRelative(vec.getBlockX(), vec.getBlockY(), vec.getBlockZ());
+            if (filter.test(block.getType())) {
+                set.add(block);
+            }
+        }
+        return Collections.unmodifiableSet(set);
     }
 
     private static void searchConnected(
