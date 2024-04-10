@@ -9,28 +9,24 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.bukkit.Material.*;
+import static org.bukkit.block.BlockFace.*;
 
 public final class Plugin extends JavaPlugin implements Listener {
 
     private static final int limit = 420;
 
-    private static final Set<BlockFace> neighborsY = Set.of(
-            BlockFace.NORTH,
-            BlockFace.EAST,
-            BlockFace.SOUTH,
-            BlockFace.WEST,
-            BlockFace.NORTH_EAST,
-            BlockFace.NORTH_WEST,
-            BlockFace.SOUTH_EAST,
-            BlockFace.SOUTH_WEST
+    private static final Set<BlockFace> neighborFaces = Set.of(
+            NORTH,
+            EAST,
+            SOUTH,
+            WEST,
+            UP,
+            DOWN
     );
 
     private static final Set<Material> logs = Set.of(
@@ -62,7 +58,8 @@ public final class Plugin extends JavaPlugin implements Listener {
             LEGACY_DIAMOND_AXE
     );
 
-    private static final Map<Material, Set<Material>> associated = ImmutableMap.<Material, Set<Material>>builder()
+    private static final Map<Material, Set<Material>> connected = ImmutableMap
+            .<Material, Set<Material>>builder()
             .put(OAK_LOG, Set.of(OAK_LEAVES))
             .put(SPRUCE_LOG, Set.of(SPRUCE_LEAVES))
             .put(BIRCH_LOG, Set.of(BIRCH_LEAVES))
@@ -77,6 +74,40 @@ public final class Plugin extends JavaPlugin implements Listener {
             .put(WARPED_STEM, Set.of(WARPED_WART_BLOCK, SHROOMLIGHT))
             .build();
 
+    private static Set<Block> neighbors(Block center, Predicate<Material> filter) {
+        return neighborFaces.stream()
+
+                // grab all neighbors of the center block
+                .map(center::getRelative)
+
+                // keep them if they match the material filter
+                .filter(block -> filter
+                        .test(block.getType()))
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    private static void searchConnected(
+            Block start,
+            List<Block> found,
+            Predicate<Material> filter
+    ) {
+        for (Block block : neighbors(start, filter)) {
+
+            // limit reached, stop searching
+            if (found.size() >= limit) return;
+
+            // already visited, skip this block
+            if (found.contains(block)) continue;
+
+            // wrong material, skip this block
+            if (!filter.test(block.getType())) continue;
+
+            // check neighbors
+            found.add(block);
+            searchConnected(block, found, filter);
+        }
+    }
+
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
@@ -85,44 +116,32 @@ public final class Plugin extends JavaPlugin implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerBlockBreakEvent(BlockBreakEvent ev) {
 
-        // only logs
-        if (!logs.contains(ev.getBlock().getType())) return;
-
         // only axes
-        if (!axes.contains(ev.getPlayer().getInventory().getItemInMainHand().getType())) return;
+        if (!axes.contains(ev.getPlayer()
+                .getInventory()
+                .getItemInMainHand()
+                .getType())) return;
 
-        Set<Block> breakies = new HashSet<>();
+        var logMat = ev.getBlock().getType();
+
+        // only logs
+        if (!logs.contains(logMat)) return;
 
         // trunk
-        breakies.addAll(bfs(ev.getBlock(), mat -> mat.equals(ev.getBlock().getType())));
+        List<Block> trunk = new ArrayList<>();
+        searchConnected(ev.getBlock(), trunk, mat -> mat.equals(logMat));
 
         // leaves
-        breakies.addAll(bfs(ev.getBlock(), mat -> associated
-                .getOrDefault(ev.getBlock().getType(), Collections.emptySet())
-                .contains(mat)));
+        List<Block> breakies = new ArrayList<>(trunk);
+        for (Block block : trunk) {
+            searchConnected(block, breakies, mat -> connected
+                    .getOrDefault(logMat, Collections.emptySet())
+                    .contains(mat));
+        }
 
         for (Block block : breakies) {
             block.breakNaturally();
             // TODO: drop all loot in front of player
         }
-    }
-
-    private Set<Block> neighbors(Block center, Predicate<Material> filter) {
-        return neighborsY.stream()
-                // grab all neighbors of the center block
-                .map(center::getRelative)
-                // keep them if they match the material filter
-                .filter(block -> filter.test(block.getType()))
-                .collect(Collectors.toUnmodifiableSet());
-    }
-
-    private Set<Block> bfs(Block start, Predicate<Material> filter) {
-        Set<Block> blocks = new HashSet<>();
-
-        // TODO
-
-        if (blocks.size() >= limit) return blocks;
-
-        return blocks;
     }
 }
