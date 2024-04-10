@@ -4,12 +4,16 @@ import com.google.common.collect.ImmutableMap;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -108,6 +112,16 @@ public final class Plugin extends JavaPlugin implements Listener {
         }
     }
 
+    private static void damageTool(ItemStack tool) {
+        if (tool.getItemMeta() instanceof Damageable damageable) {
+            var damageChance = 100 / (tool.getEnchantmentLevel(Enchantment.DURABILITY) + 1);
+            if (ThreadLocalRandom.current().nextInt(1, 100 + 1) <= damageChance) {
+                damageable.setDamage(damageable.getDamage() + 1);
+                tool.setItemMeta(damageable);
+            }
+        }
+    }
+
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
@@ -117,10 +131,8 @@ public final class Plugin extends JavaPlugin implements Listener {
     public void onPlayerBlockBreakEvent(BlockBreakEvent ev) {
 
         // only axes
-        if (!axes.contains(ev.getPlayer()
-                .getInventory()
-                .getItemInMainHand()
-                .getType())) return;
+        var tool = ev.getPlayer().getInventory().getItemInMainHand();
+        if (!axes.contains(tool.getType())) return;
 
         var logMat = ev.getBlock().getType();
 
@@ -140,7 +152,18 @@ public final class Plugin extends JavaPlugin implements Listener {
         }
 
         for (Block block : breakies) {
+
+            if (logs.contains(block.getType())) {
+                var maxDura = tool.getType().getMaxDurability();
+                var damage = ((Damageable) tool.getItemMeta()).getDamage();
+                if (maxDura - damage <= 1) {
+                    return;
+                }
+                damageTool(tool);
+            }
+
             block.breakNaturally();
+
             // TODO: drop all loot in front of player
         }
     }
