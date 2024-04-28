@@ -25,34 +25,34 @@ public final class Plugin extends JavaPlugin implements Listener {
 
     private static final List<Vector> neighborFaces = List.of(
             // middle
-            new Vector( 0, 0, -1),  // N
-            new Vector( 1, 0, 0),   // E
-            new Vector( 0, 0, 1),   // S
-            new Vector(-1, 0, 0),  // W
-            new Vector( 1, 0, -1),  // NE
-            new Vector(-1, 0, -1), // NW
-            new Vector( 1, 0, 1),   // SE
-            new Vector(-1, 0, 1),  // SW
+            new Vector( 0,  0, -1), // N
+            new Vector( 1,  0,  0), // E
+            new Vector( 0,  0,  1), // S
+            new Vector(-1,  0,  0), // W
+            new Vector( 1,  0, -1), // NE
+            new Vector(-1,  0, -1), // NW
+            new Vector( 1,  0,  1), // SE
+            new Vector(-1,  0,  1), // SW
             // top
-            new Vector(0, 1, 0),  // center
-            new Vector( 0, 1, -1),  // N
-            new Vector( 1, 1, 0),   // E
-            new Vector( 0, 1, 1),   // S
-            new Vector(-1, 1, 0),  // W
-            new Vector( 1, 1, -1),  // NE
-            new Vector(-1, 1, -1), // NW
-            new Vector( 1, 1, 1),   // SE
-            new Vector(-1, 1, 1),  // SW
+            new Vector( 0,  1 , 0), // center
+            new Vector( 0,  1, -1), // N
+            new Vector( 1,  1,  0), // E
+            new Vector( 0,  1,  1), // S
+            new Vector(-1,  1,  0), // W
+            new Vector( 1,  1, -1), // NE
+            new Vector(-1,  1, -1), // NW
+            new Vector( 1,  1,  1), // SE
+            new Vector(-1,  1,  1), // SW
             // bottom
-            new Vector(0, -1, 0),  // center
-            new Vector( 0,-1, -1),  // N
-            new Vector( 1,-1, 0),   // E
-            new Vector( 0,-1, 1),   // S
-            new Vector(-1,-1, 0),  // W
-            new Vector( 1,-1, -1),  // NE
-            new Vector(-1,-1, -1), // NW
-            new Vector( 1,-1, 1),   // SE
-            new Vector(-1,-1, 1)   // SW
+            new Vector( 0, -1,  0), // center
+            new Vector( 0, -1, -1), // N
+            new Vector( 1, -1,  0), // E
+            new Vector( 0, -1,  1), // S
+            new Vector(-1, -1,  0), // W
+            new Vector( 1, -1, -1), // NE
+            new Vector(-1, -1, -1), // NW
+            new Vector( 1, -1,  1), // SE
+            new Vector(-1, -1,  1)  // SW
     );
 
     private static final Set<Material> logs = Set.of(
