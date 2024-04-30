@@ -34,7 +34,7 @@ tasks.withType(JavaCompile).configureEach {
 processResources {
     filteringCharset "UTF-8"
     filesMatching("plugin.yml") {
-        filter { line -> line.replace("@mod_version@", project.version) }
+        filter { line -> line.replace("@VERSION@", project.version) }
     }
 }
 

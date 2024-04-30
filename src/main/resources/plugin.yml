@@ -1,5 +1,5 @@
 name: LogLogRevolution
-version: '@mod_version@'
+version: '@VERSION@'
 main: party.bongs.loglogrevolution.Plugin
 api-version: '1.20'
 author: bohnentoni
